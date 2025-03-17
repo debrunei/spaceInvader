@@ -38,39 +38,100 @@ class Game:
 
     def update(self):
         """Update the game"""
-        ... #TODO: we will do this one later.
+        self.shift_aliens()
+        self.check_collisions()
+        self.check_round_completion()
 
     def draw(self):
         """Draw the HUD and other information to display"""
-        ... #TODO: we will do this one later.
+        # Set colors
+        WHITE = (255, 255, 255)
+
+        # Set text
+        score_text = self.font.render("Score: " + str(self.score), True, WHITE)
+        score_rect = score_text.get_rect()
+        score_rect.centerx = WINDOW_WIDTH // 2
+        score_rect.top = 10
+
+        round_text = self.font.render("Round: " + str(self.round_number), True, WHITE)
+        round_rect = round_text.get_rect()
+        round_rect.topleft = (20, 10)
+
+        lives_text = self.font.render("Lives: " + str(self.player.lives), True, WHITE)
+        lives_rect = lives_text.get_rect()
+        lives_rect.topright = (WINDOW_WIDTH - 20, 10)
+
+        # Blit the HUD to the display
+        display_surface.blit(score_text, score_rect)
+        display_surface.blit(round_text, round_rect)
+        display_surface.blit(lives_text, lives_rect)
+        pygame.draw.line(display_surface, WHITE, (0, 50), (WINDOW_WIDTH, 50), 4)
+        pygame.draw.line(display_surface, WHITE, (0, WINDOW_HEIGHT - 100), (WINDOW_WIDTH, WINDOW_HEIGHT - 100), 4)
 
     def shift_aliens(self):
         """Shift a wave of aliens down the screen and reverse direction"""
-        ... #TODO: we will do this one later.
+        ...  # TODO: we will do this one later.
 
     def check_collision(self):
         """Check for collisions"""
-        ... #TODO: we will do this one later.
+        if pygame.sprite.groupcollide(self.player_bullet_group, self.alien_group, True, True):
+            self.alien_hit_sound.play()
+            self.score += 100
+
+        # See if the player has collided with any bullet in the alien bullet group
+        if pygame.sprite.spritecollide(self.player, self.alien_bullet_group, True):
+            self.player_hit_sound.play()
+            self.player.lives -= 1
+            self.check_game_status("You've been hit!", "Press 'enter' to continue")
+
 
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
-        ... #TODO: we will do this one later.
+        # If the alien group is empty, you've completed the round
+        if not self.alien_group:
+            self.score += 1000 * self.round_number
+            self.round_number += 1
+            self.start_new_round()
 
     def start_new_round(self):
         """Start a new round"""
-        ... #TODO: we will do this one later.
+        ...  # TODO: we will do this one later.
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
-        ... #TODO: we will do this one later.
+        # Empty the bullet groups and reset player and remaining aliens
+        self.alien_bullet_group.empty()
+        self.player_bullet_group.empty()
+        self.player.reset()
+        for alien in self.alien_group:
+            self.alien_group.reset()
+
+    # Check if the game is over or if it is a simple round reset
+        if self.player.lives == 0:
+            self.reset_game()
+        else:
+            self.pause_game(main_text, sub_text)
 
     def pause_game(self, main_text, sub_text):
         """Pauses the game"""
-        ... #TODO: we will do this one later.
+        ...  # TODO: we will do this one later.
 
     def reset_game(self):
         """Reset the game"""
-        ... #TODO: we will do this one later.
+        self.pause_game("Final Score: " + str(self.score), "Press 'Enter' to play again")
+
+        # Reset game values
+        self.score = 0
+        self.round_number = 1
+        self.player.lives = 5
+
+        # Empty groups
+        self.alien_group.empty()
+        self.alien_bullet_group.empty()
+        self.player_bullet_group()
+
+        #Start a new game
+        self.start_new_round()
 
 
 class Player(pygame.sprite.Sprite):
