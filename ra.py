@@ -1,15 +1,15 @@
 import pygame, random
 
-#Intialize pygame
+
 pygame.init()
 
-#Set Display Surface
+
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 700
 size = (WINDOW_WIDTH, WINDOW_HEIGHT)
 display_surface = pygame.display.set_mode(size)
 
-#Set FPS and clock
+
 FPS = 60
 clock = pygame.time.Clock()
 
@@ -19,7 +19,7 @@ class Game:
 
     def __init__(self, player, alien_group, player_bullet_group, alien_bullet_group):
         """Initialize the game"""
-        #Set game values
+
         self.round_number = 1
         self.score = 0
         self.player = player
@@ -27,19 +27,19 @@ class Game:
         self.player_bullet_group = player_bullet_group
         self.alien_bullet_group = alien_bullet_group
 
-        #Set sounds and music
-        self.new_round_sound = pygame.mixer.Sound("./assets/audio/new_round.wav")
-        self.breach_sound = pygame.mixer.Sound("./assets/audio/breach.wav")
-        self.alien_hit_sound = pygame.mixer.Sound("./assets/audio/alien_hit.wav")
-        self.player_hit_sound = pygame.mixer.Sound("./assets/audio/player_hit.wav")
+
+        self.new_round_sound = pygame.mixer.Sound("new_round.wav")
+        self.breach_sound = pygame.mixer.Sound("breach.wav")
+        self.alien_hit_sound = pygame.mixer.Sound("alien_hit.wav")
+        self.player_hit_sound = pygame.mixer.Sound("player_hit.wav")
 
         #Set font
-        self.font = pygame.font.Font("./assets/fonts/Facon.ttf", 32)
+        self.font = pygame.font.Font("Facon.ttf", 32)
 
     def update(self):
         """Update the game"""
         self.shift_aliens()
-        self.check_collisions()
+        self.check_collision()
         self.check_round_completion()
 
     def draw(self):
@@ -70,8 +70,13 @@ class Game:
 
     def shift_aliens(self):
         """Shift a wave of aliens down the screen and reverse direction"""
-        ...  # TODO: we will do this one later.
-
+        # Determine if alien group has hit an edge
+        shift = False
+        for alien in (self.alien_group.sprites()):
+        # start of for.
+            if alien.rect.left <= 0 or alien.rect.right >= WINDOW_WIDTH:
+                shift = True
+        # end of for
     def check_collision(self):
         """Check for collisions"""
         if pygame.sprite.groupcollide(self.player_bullet_group, self.alien_group, True, True):
@@ -94,8 +99,14 @@ class Game:
             self.start_new_round()
 
     def start_new_round(self):
-        """Start a new round"""
-        ...  # TODO: we will do this one later.
+         """Start a new round"""
+         for i in range(11):
+            for j in range(5):
+                x = 64 + i * 64  # start_offset + column * column_spacing
+                y = 64 + j * 64  # start_offset + row * row_spacing
+                velocity = self.round_number
+                group = self.alien_bullet_group
+                alien = Alien(x, y, velocity, group)
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
@@ -114,7 +125,25 @@ class Game:
 
     def pause_game(self, main_text, sub_text):
         """Pauses the game"""
-        ...  # TODO: we will do this one later.
+        global running
+        BLACK = 0, 0, 0
+        WHITE = 255, 255, 255
+
+        # Create main pause text
+        main_text(self.font.render(main_text, True, WHITE))
+        main_rect = main_text.get_rect()
+        main_rect.center = (WINDOW_WIDTH // WINDOW_HEIGHT)
+
+        # Create sub pause text
+        sub_text(self.font.render(sub_text, True, WHITE))
+        sub_rect = sub_text.get_rect()
+        sub_text.center = WINDOW_WIDTH // WINDOW_HEIGHT + 64
+
+        # Blit the pause text
+        display_surface.fill(BLACK)
+        display_surface.blit(main_text, main_rect)
+        display_surface.blit(sub_text, sub_rect)
+        pygame.display.update()
 
     def reset_game(self):
         """Reset the game"""
@@ -140,7 +169,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, bullet_group):
         """Initialize the player"""
         super().__init__()
-        self.image = pygame.image.load("./assets/image/player_ship.png")
+        self.image = pygame.image.load("player_ship.png")
         self.rect = self.image.get_rect()
         self.rect.centerx = WINDOW_HEIGHT // 2
         self.rect.bottom = WINDOW_HEIGHT
@@ -150,7 +179,7 @@ class Player(pygame.sprite.Sprite):
 
         self.bullet_group = bullet_group
 
-        self.shoot_sound = pygame.mixer.Sound("./assets/audio/player_fire.wav")
+        self.shoot_sound = pygame.mixer.Sound("player_fire.wav")
 
     def update(self):
         """Update the player"""
@@ -179,7 +208,7 @@ class Alien(pygame.sprite.Sprite):
     def __init__(self, x, y, velocity, bullet_group):
         """Initialize the alien"""
         super().__init__()
-        self.image = pygame.image.load("./assets/images/alien.png")
+        self.image = pygame.image.load("alien.png")
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
 
@@ -190,7 +219,7 @@ class Alien(pygame.sprite.Sprite):
         self.velocity = velocity
         self.bullet_group = bullet_group
 
-        self.shoot_sound = pygame.mixer.Sound("./assets/audio/alien_fire.wav")
+        self.shoot_sound = pygame.mixer.Sound("alien_fire.wav")
 
     def update(self):
         """Update the alien"""
@@ -216,7 +245,7 @@ class PlayerBullet(pygame.sprite.Sprite):
     def __init__(self, x, y, bullet_group):
         """Initialize the bullet"""
         super().__init__()
-        self.image = pygame.image.load("./assets/images/green_laser.png")
+        self.image = pygame.image.load("green_laser.png")
         self.rect = self.image.get_rect
         self.image.centerx = x
         self.image.centery = y
@@ -236,7 +265,7 @@ class AlienBullet(pygame.sprite.Sprite):
     def __init__(self, x, y, bullet_group):
         """Initialize the bullet"""
         super().__init__()
-        self.image = pygame.image.load("./assets/image/red_laser.png")
+        self.image = pygame.image.load("red_laser.png")
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
