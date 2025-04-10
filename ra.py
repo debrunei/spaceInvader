@@ -1,14 +1,11 @@
 import pygame, random
 
-
 pygame.init()
-
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 700
 size = (WINDOW_WIDTH, WINDOW_HEIGHT)
 display_surface = pygame.display.set_mode(size)
-
 
 FPS = 60
 clock = pygame.time.Clock()
@@ -27,13 +24,12 @@ class Game:
         self.player_bullet_group = player_bullet_group
         self.alien_bullet_group = alien_bullet_group
 
-
         self.new_round_sound = pygame.mixer.Sound("new_round.wav")
         self.breach_sound = pygame.mixer.Sound("breach.wav")
         self.alien_hit_sound = pygame.mixer.Sound("alien_hit.wav")
         self.player_hit_sound = pygame.mixer.Sound("player_hit.wav")
 
-        #Set font
+        # Set font
         self.font = pygame.font.Font("Facon.ttf", 32)
 
     def update(self):
@@ -73,10 +69,11 @@ class Game:
         # Determine if alien group has hit an edge
         shift = False
         for alien in (self.alien_group.sprites()):
-        # start of for.
+            # start of for.
             if alien.rect.left <= 0 or alien.rect.right >= WINDOW_WIDTH:
                 shift = True
         # end of for
+
     def check_collision(self):
         """Check for collisions"""
         if pygame.sprite.groupcollide(self.player_bullet_group, self.alien_group, True, True):
@@ -89,7 +86,6 @@ class Game:
             self.player.lives -= 1
             self.check_game_status("You've been hit!", "Press 'enter' to continue")
 
-
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
         # If the alien group is empty, you've completed the round
@@ -99,14 +95,15 @@ class Game:
             self.start_new_round()
 
     def start_new_round(self):
-         """Start a new round"""
-         for i in range(11):
+        """Start a new round"""
+        for i in range(11):
             for j in range(5):
                 x = 64 + i * 64  # start_offset + column * column_spacing
                 y = 64 + j * 64  # start_offset + row * row_spacing
                 velocity = self.round_number
                 group = self.alien_bullet_group
                 alien = Alien(x, y, velocity, group)
+                self.alien_group.add(alien)
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
@@ -115,9 +112,9 @@ class Game:
         self.player_bullet_group.empty()
         self.player.reset()
         for alien in self.alien_group:
-            self.alien_group.reset()
+            alien.reset()
 
-    # Check if the game is over or if it is a simple round reset
+        # Check if the game is over or if it is a simple round reset
         if self.player.lives == 0:
             self.reset_game()
         else:
@@ -130,20 +127,34 @@ class Game:
         WHITE = 255, 255, 255
 
         # Create main pause text
-        main_text(self.font.render(main_text, True, WHITE))
+        main_text = self.font.render(main_text, True, WHITE)
         main_rect = main_text.get_rect()
-        main_rect.center = (WINDOW_WIDTH // WINDOW_HEIGHT)
+        main_rect.center = (WINDOW_WIDTH //2, WINDOW_HEIGHT // 2)
 
         # Create sub pause text
-        sub_text(self.font.render(sub_text, True, WHITE))
+        sub_text = self.font.render(sub_text, True, WHITE)
         sub_rect = sub_text.get_rect()
-        sub_text.center = WINDOW_WIDTH // WINDOW_HEIGHT + 64
+        sub_rect.center = (WINDOW_WIDTH //2, WINDOW_HEIGHT // 2 + 64)
 
         # Blit the pause text
         display_surface.fill(BLACK)
         display_surface.blit(main_text, main_rect)
         display_surface.blit(sub_text, sub_rect)
         pygame.display.update()
+
+        # Pause the game until the user hits enter
+        is_paused = True
+        while is_paused:
+            for event in pygame.event.get():
+                # The user wants to play again
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        is_paused = False
+                if event.type == pygame.QUIT:
+                    is_paused = False
+                    running = False
+
+
 
     def reset_game(self):
         """Reset the game"""
@@ -159,7 +170,7 @@ class Game:
         self.alien_bullet_group.empty()
         self.player_bullet_group()
 
-        #Start a new game
+        # Start a new game
         self.start_new_round()
 
 
@@ -195,7 +206,6 @@ class Player(pygame.sprite.Sprite):
         if len(self.bullet_group) < 2:
             self.shoot_sound.play()
             PlayerBullet(self.rect.centerx, self.rect.top, self.bullet_group)
-
 
     def reset(self):
         """Reset the players position"""
@@ -246,18 +256,18 @@ class PlayerBullet(pygame.sprite.Sprite):
         """Initialize the bullet"""
         super().__init__()
         self.image = pygame.image.load("green_laser.png")
-        self.rect = self.image.get_rect
-        self.image.centerx = x
-        self.image.centery = y
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
         self.velocity = 10
         bullet_group.add(self)
-
 
     def update(self):
         """Update the bullet"""
         self.rect.y -= self.velocity
         if self.rect.bottom < 0:
             self.kill()
+
 
 class AlienBullet(pygame.sprite.Sprite):
     """A class to model a bullet fired by the alien"""
@@ -272,7 +282,6 @@ class AlienBullet(pygame.sprite.Sprite):
         self.velocity = 10
         bullet_group.add(self)
 
-
     def update(self):
         """Update the bullet"""
         self.rect.y += self.velocity
@@ -281,35 +290,30 @@ class AlienBullet(pygame.sprite.Sprite):
             self.kill()
 
 
-
-#Create bullet groups
+# Create bullet groups
 my_player_bullet_group = pygame.sprite.Group()
 my_alien_bullet_group = pygame.sprite.Group()
 
-
-#Create a player group and Player object
+# Create a player group and Player object
 my_player_group = pygame.sprite.Group()
 my_player = Player(my_player_bullet_group)
 my_player_group.add(my_player)
 
-#Create an alien group.  Will add Alien objects via the game's start new round method
+# Create an alien group.  Will add Alien objects via the game's start new round method
 my_alien_group = pygame.sprite.Group()
-my_alien = Alien(my_alien_bullet_group)
-my_alien_group.add(my_alien)
 
-
-#Create the Game object
+# Create the Game object
 my_game = Game(my_player, my_alien_group, my_player_bullet_group, my_alien_bullet_group)
 my_game.start_new_round()
 
-#The main game loop
+# The main game loop
 running = True
 while running:
-    #Check to see if the user wants to quit
+    # Check to see if the user wants to quit
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        #The player wants to fire
+        # The player wants to fire
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 my_player.fire()
@@ -317,7 +321,7 @@ while running:
     # Fill the display
     display_surface.fill((0, 0, 0))
 
-    #Update and display all sprite groups
+    # Update and display all sprite groups
     my_player_group.update()
     my_player_group.draw(display_surface)
 
@@ -330,13 +334,13 @@ while running:
     my_alien_bullet_group.update()
     my_alien_bullet_group.draw(display_surface)
 
-    #Update and draw Game object
+    # Update and draw Game object
     my_game.update()
     my_game.draw()
 
-    #Update the display and tick clock
+    # Update the display and tick clock
     pygame.display.update()
     clock.tick(FPS)
 
-#End the game
+# End the game
 pygame.quit()
